@@ -207,6 +207,183 @@ export const scorecards: Scorecard[] = services.map((svc) => ({
   ],
 }));
 
+// Builder types and data
+
+export interface BuilderTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  stack: string[];
+  requiredGuardrails: string[];
+  estimatedSetupMins: number;
+}
+
+export interface RequiredGuardrail {
+  id: string;
+  label: string;
+  description: string;
+  category: string;
+}
+
+export interface OptionalGuardrail {
+  id: string;
+  label: string;
+  description: string;
+  defaultEnabled: boolean;
+}
+
+export interface BuilderApp {
+  id: string;
+  name: string;
+  templateId: string;
+  team: string;
+  status: "running" | "building" | "failed";
+  createdAt: string;
+  enabledOptionalGuardrails: string[];
+}
+
+export const builderTemplates: BuilderTemplate[] = [
+  {
+    id: "tmpl-001",
+    name: "Next.js App",
+    description: "Full-stack web application with App Router, TypeScript, and Tailwind CSS. Pre-wired with auth middleware and org design tokens.",
+    category: "Frontend",
+    stack: ["TypeScript", "Next.js", "Tailwind CSS", "PostgreSQL"],
+    requiredGuardrails: ["guard-sso", "guard-https", "guard-dep-audit", "guard-audit-log"],
+    estimatedSetupMins: 8,
+  },
+  {
+    id: "tmpl-002",
+    name: "Go API Service",
+    description: "Production-ready REST API in Go with chi router, structured logging, and OpenTelemetry instrumentation baked in.",
+    category: "Backend",
+    stack: ["Go", "chi", "PostgreSQL", "OpenTelemetry"],
+    requiredGuardrails: ["guard-sso", "guard-https", "guard-dep-audit", "guard-audit-log"],
+    estimatedSetupMins: 6,
+  },
+  {
+    id: "tmpl-003",
+    name: "Python Lambda",
+    description: "AWS Lambda function in Python with SAM template, structured logging, and X-Ray tracing configured out of the box.",
+    category: "Serverless",
+    stack: ["Python", "AWS Lambda", "SAM", "X-Ray"],
+    requiredGuardrails: ["guard-sso", "guard-https", "guard-dep-audit", "guard-audit-log"],
+    estimatedSetupMins: 5,
+  },
+  {
+    id: "tmpl-004",
+    name: "React Library",
+    description: "Shareable React component library with Storybook, Vitest, and automated npm publishing via GitHub Actions.",
+    category: "Library",
+    stack: ["TypeScript", "React", "Storybook", "Vitest"],
+    requiredGuardrails: ["guard-sso", "guard-dep-audit", "guard-audit-log"],
+    estimatedSetupMins: 10,
+  },
+  {
+    id: "tmpl-005",
+    name: "Data Pipeline",
+    description: "Apache Airflow DAG with dbt transformations, Great Expectations data quality checks, and Slack alerting.",
+    category: "Data",
+    stack: ["Python", "Airflow", "dbt", "PostgreSQL"],
+    requiredGuardrails: ["guard-sso", "guard-https", "guard-dep-audit", "guard-audit-log"],
+    estimatedSetupMins: 12,
+  },
+];
+
+export const requiredGuardrails: RequiredGuardrail[] = [
+  {
+    id: "guard-sso",
+    label: "SSO Required",
+    description: "All human access must go through the org SSO provider. Service accounts use OIDC workload identity.",
+    category: "Access Control",
+  },
+  {
+    id: "guard-https",
+    label: "HTTPS Only",
+    description: "All endpoints enforce TLS 1.2+. HTTP traffic is rejected at the load balancer with 301 redirect.",
+    category: "Transport Security",
+  },
+  {
+    id: "guard-dep-audit",
+    label: "Dependency Audit",
+    description: "CI pipeline runs dependency vulnerability scanning on every pull request. Critical CVEs block merge.",
+    category: "Supply Chain",
+  },
+  {
+    id: "guard-audit-log",
+    label: "Audit Logging",
+    description: "All state-changing operations are written to the immutable audit log with actor, timestamp, and diff.",
+    category: "Compliance",
+  },
+];
+
+export const optionalGuardrails: OptionalGuardrail[] = [
+  {
+    id: "opt-rate-limit",
+    label: "Rate Limiting",
+    description: "Enforce per-client request rate limits at the API gateway layer.",
+    defaultEnabled: true,
+  },
+  {
+    id: "opt-pii-detect",
+    label: "PII Detection",
+    description: "Scan request/response payloads for PII and redact before logging.",
+    defaultEnabled: false,
+  },
+  {
+    id: "opt-data-residency",
+    label: "Data Residency: US",
+    description: "Restrict data storage and processing to US-based AWS regions only.",
+    defaultEnabled: true,
+  },
+  {
+    id: "opt-waf",
+    label: "WAF Protection",
+    description: "Attach an AWS WAF with OWASP Core Rule Set to all public endpoints.",
+    defaultEnabled: false,
+  },
+];
+
+export const builderApps: BuilderApp[] = [
+  {
+    id: "app-001",
+    name: "consumer-portal-v2",
+    templateId: "tmpl-001",
+    team: "Consumer",
+    status: "running",
+    createdAt: "2026-02-10",
+    enabledOptionalGuardrails: ["opt-rate-limit", "opt-data-residency", "opt-waf"],
+  },
+  {
+    id: "app-002",
+    name: "payments-api",
+    templateId: "tmpl-002",
+    team: "Payments",
+    status: "running",
+    createdAt: "2026-01-28",
+    enabledOptionalGuardrails: ["opt-rate-limit", "opt-pii-detect", "opt-data-residency"],
+  },
+  {
+    id: "app-003",
+    name: "invoice-mailer",
+    templateId: "tmpl-003",
+    team: "Platform",
+    status: "building",
+    createdAt: "2026-02-26",
+    enabledOptionalGuardrails: ["opt-rate-limit"],
+  },
+  {
+    id: "app-004",
+    name: "events-ingest",
+    templateId: "tmpl-005",
+    team: "Analytics",
+    status: "failed",
+    createdAt: "2026-02-25",
+    enabledOptionalGuardrails: ["opt-rate-limit", "opt-data-residency"],
+  },
+];
+
 // Stable scorecard data (no random values for consistent SSR)
 export const stablescorecards: Scorecard[] = [
   { serviceId: "svc-001", dimensions: [{ name: "Documentation", score: 90 }, { name: "Testing", score: 85 }, { name: "Security", score: 95 }, { name: "Observability", score: 80 }, { name: "CI/CD", score: 92 }] },
